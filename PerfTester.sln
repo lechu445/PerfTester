@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.26430.16
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PerfTester", "PerfTester\PerfTester.csproj", "{403ECDA4-57D1-466A-B110-5E3F1CE9837F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PerfTests", "PerfTests\PerfTests.csproj", "{D620BFC5-DAFE-408E-82D8-05E42A109BDC}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{403ECDA4-57D1-466A-B110-5E3F1CE9837F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{403ECDA4-57D1-466A-B110-5E3F1CE9837F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{403ECDA4-57D1-466A-B110-5E3F1CE9837F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{403ECDA4-57D1-466A-B110-5E3F1CE9837F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D620BFC5-DAFE-408E-82D8-05E42A109BDC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D620BFC5-DAFE-408E-82D8-05E42A109BDC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D620BFC5-DAFE-408E-82D8-05E42A109BDC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D620BFC5-DAFE-408E-82D8-05E42A109BDC}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
