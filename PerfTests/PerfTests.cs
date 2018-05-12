@@ -6,7 +6,6 @@ namespace PerfTestsTools
 {
   public static class PerfTests
   {
-    const int WARM_UP_ITERATIONS = 1000000;
 
     public static void TestMethod(Action func1, Action func2, int iterations, TextWriter output)
     {
@@ -36,10 +35,12 @@ namespace PerfTestsTools
       output.Write('\t');
       output.Write("func2");
       output.Write('\t');
-      output.WriteLine("func2/func1");
+      output.Write("func2/func1");
+      output.Write('\t');
+      output.WriteLine("diff");
 
-      int currentNumberOfIterations = iterationsCount;
-      while (currentNumberOfIterations > 0)
+      int currentNumberOfIterations = 1;
+      while (currentNumberOfIterations <= iterationsCount)
       {
         times = fun(currentNumberOfIterations);
         time1ms = times.Item1;
@@ -51,24 +52,34 @@ namespace PerfTestsTools
         output.Write('\t');
         output.Write(time2ms);
         output.Write('\t');
-        output.WriteLine((time1ms == 0 ? 0 : (double)time2ms / time1ms).ToString("0.##"));
-        currentNumberOfIterations = currentNumberOfIterations / 10;
+        output.Write((time1ms == 0 ? 0 : (double)time2ms / time1ms).ToString("0.##"));
+        output.Write('\t');
+        output.WriteLine((time1ms == 0 ? 0 : ((double)time2ms - (double)time1ms) / (double)time2ms).ToString("0%"));
+        currentNumberOfIterations = currentNumberOfIterations * 10;
       }
     }
     private static Tuple<long, long> TestMethodImpl<T>(Func<T> func1, Func<T> func2, int iterations)
     {
       Stopwatch sw = new Stopwatch();
-      T result;
+      T result = default(T);
       long time1ms = 0;
       long time2ms = 0;
+      int WARM_UP_ITERATIONS = iterations / 10;
 
-      for (int i = 0; i < WARM_UP_ITERATIONS; i++)
+      GC.Collect();
+      GC.WaitForPendingFinalizers();
+      GC.Collect();
+
+      if (iterations == 1)
       {
-        result = func1();
-      }
-      for (int i = 0; i < WARM_UP_ITERATIONS; i++)
-      {
-        result = func2();
+        for (int i = 0; i < WARM_UP_ITERATIONS; i++)
+        {
+          result = func1();
+        }
+        for (int i = 0; i < WARM_UP_ITERATIONS; i++)
+        {
+          result = func2();
+        }
       }
 
       sw.Restart();
@@ -89,6 +100,8 @@ namespace PerfTestsTools
 
       time2ms = sw.ElapsedMilliseconds;
 
+      GC.KeepAlive(result);
+
       return new Tuple<long, long>(time1ms, time2ms);
     }
 
@@ -97,6 +110,11 @@ namespace PerfTestsTools
       Stopwatch sw = new Stopwatch();
       long time1ms = 0;
       long time2ms = 0;
+      int WARM_UP_ITERATIONS = iterations / 10;
+
+      GC.Collect();
+      GC.WaitForPendingFinalizers();
+      GC.Collect();
 
       for (int i = 0; i < WARM_UP_ITERATIONS; i++)
       {
