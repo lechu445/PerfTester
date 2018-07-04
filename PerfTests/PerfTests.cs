@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PerfTests;
+using System;
 using System.Diagnostics;
 using System.IO;
 
@@ -17,7 +18,7 @@ namespace PerfTestsTools
       TestMethodDisp((iter) => TestMethodImpl(func1, func2, iter), iterations, output);
     }
 
-    private static void TestMethodDisp(Func<int, Tuple<long, long>> fun, int iterationsCount, TextWriter output)
+    private static void TestMethodDisp(Func<int, Statistics> fun, int iterationsCount, TextWriter output)
     {
 #if DEBUG
       output.WriteLine("Build mode: Debug");
@@ -25,9 +26,12 @@ namespace PerfTestsTools
       output.WriteLine("Build mode: Release");
 #endif
 
-      Tuple<long, long> times;
-      long time1ms;
-      long time2ms;
+      Statistics stat;
+      //Tuple<long, long, long, long> times;
+      //long time1ms;
+      //long time2ms;
+      //long mem1;
+      //long mem2;
       output.Write("iterations".PadLeft(iterationsCount.ToString().Length, ' '));
       output.Write(':');
       output.Write('\t');
@@ -37,33 +41,49 @@ namespace PerfTestsTools
       output.Write('\t');
       output.Write("func2/func1");
       output.Write('\t');
-      output.WriteLine("diff");
+      output.Write("diff");
+      output.Write('\t');
+      output.Write(nameof(stat.gen0gc1));
+      output.Write('\t');
+      output.Write(nameof(stat.gen0gc2));
+      output.Write('\t');
+      output.Write(nameof(stat.gen1gc1));
+      output.Write('\t');
+      output.Write(nameof(stat.gen1gc2));
+      output.WriteLine();
 
       int currentNumberOfIterations = 1;
       while (currentNumberOfIterations <= iterationsCount)
       {
-        times = fun(currentNumberOfIterations);
-        time1ms = times.Item1;
-        time2ms = times.Item2;
+        stat = fun(currentNumberOfIterations);
         output.Write(currentNumberOfIterations.ToString().PadLeft(iterationsCount.ToString().Length, ' '));
         output.Write(':');
         output.Write('\t');
-        output.Write(time1ms);
+        output.Write(stat.time1ms);
         output.Write('\t');
-        output.Write(time2ms);
+        output.Write(stat.time2ms);
         output.Write('\t');
-        output.Write((time1ms == 0 ? 0 : (double)time2ms / time1ms).ToString("0.##"));
+        output.Write((stat.time1ms == 0 ? 0 : (double)stat.time2ms / stat.time1ms).ToString("0.##"));
         output.Write('\t');
-        output.WriteLine((time1ms == 0 ? 0 : ((double)time2ms - (double)time1ms) / (double)time2ms).ToString("0%"));
+        output.Write('\t');
+        output.Write((stat.time1ms == 0 ? 0 : ((double)stat.time2ms - (double)stat.time1ms) / (double)stat.time2ms).ToString("0%"));
+        output.Write('\t');
+        output.Write(stat.gen0gc1);
+        output.Write('\t');
+        output.Write(stat.gen0gc2);
+        output.Write('\t');
+        output.Write(stat.gen1gc1);
+        output.Write('\t');
+        output.Write(stat.gen1gc2);
+        output.WriteLine();
         currentNumberOfIterations = currentNumberOfIterations * 10;
       }
     }
-    private static Tuple<long, long> TestMethodImpl<T>(Func<T> func1, Func<T> func2, int iterations)
+    private static Statistics TestMethodImpl<T>(Func<T> func1, Func<T> func2, int iterations)
     {
       Stopwatch sw = new Stopwatch();
       T result = default(T);
-      long time1ms = 0;
-      long time2ms = 0;
+      var stat = new Statistics();
       int WARM_UP_ITERATIONS = iterations / 10;
 
       GC.Collect();
@@ -82,14 +102,24 @@ namespace PerfTestsTools
         }
       }
 
+      var memBefore0 = GC.CollectionCount(0);
+      var memBefore1 = GC.CollectionCount(1);
+
       sw.Restart();
       for (int i = 0; i < iterations; i++)
       {
         result = func1();
       }
       sw.Stop();
+      var memAfter0 = GC.CollectionCount(0);
+      var memAfter1 = GC.CollectionCount(1);
 
-      time1ms = sw.ElapsedMilliseconds;
+      stat.time1ms = sw.ElapsedMilliseconds;
+      stat.gen0gc1 = memAfter0 - memBefore0;
+      stat.gen1gc1 = memAfter1 - memBefore1;
+
+      memBefore0 = GC.CollectionCount(0);
+      memBefore1 = GC.CollectionCount(1);
 
       sw.Restart();
       for (int i = 0; i < iterations; i++)
@@ -97,19 +127,22 @@ namespace PerfTestsTools
         result = func2();
       }
       sw.Stop();
+      memAfter0 = GC.CollectionCount(0);
+      memAfter1 = GC.CollectionCount(1);
 
-      time2ms = sw.ElapsedMilliseconds;
+      stat.time2ms = sw.ElapsedMilliseconds;
+      stat.gen0gc2 = memAfter0 - memBefore0;
+      stat.gen1gc2 = memAfter1 - memBefore1;
 
       GC.KeepAlive(result);
 
-      return new Tuple<long, long>(time1ms, time2ms);
+      return stat;
     }
 
-    private static Tuple<long, long> TestMethodImpl(Action func1, Action func2, int iterations)
+    private static Statistics TestMethodImpl(Action func1, Action func2, int iterations)
     {
       Stopwatch sw = new Stopwatch();
-      long time1ms = 0;
-      long time2ms = 0;
+      var stat = new Statistics();
       int WARM_UP_ITERATIONS = iterations / 10;
 
       GC.Collect();
@@ -125,14 +158,24 @@ namespace PerfTestsTools
         func2();
       }
 
+      var memBefore0 = GC.CollectionCount(0);
+      var memBefore1 = GC.CollectionCount(1);
+
       sw.Restart();
       for (int i = 0; i < iterations; i++)
       {
         func1();
       }
       sw.Stop();
+      var memAfter0 = GC.CollectionCount(0);
+      var memAfter1 = GC.CollectionCount(1);
 
-      time1ms = sw.ElapsedMilliseconds;
+      stat.time1ms = sw.ElapsedMilliseconds;
+      stat.gen0gc1 = memAfter0 - memBefore0;
+      stat.gen1gc1 = memAfter1 - memBefore1;
+
+      memBefore0 = GC.CollectionCount(0);
+      memBefore1 = GC.CollectionCount(1);
 
       sw.Restart();
       for (int i = 0; i < iterations; i++)
@@ -140,10 +183,14 @@ namespace PerfTestsTools
         func2();
       }
       sw.Stop();
+      memAfter0 = GC.CollectionCount(0);
+      memAfter1 = GC.CollectionCount(1);
 
-      time2ms = sw.ElapsedMilliseconds;
+      stat.time2ms = sw.ElapsedMilliseconds;
+      stat.gen0gc2 = memAfter0 - memBefore0;
+      stat.gen1gc2 = memAfter1 - memBefore1;
 
-      return new Tuple<long, long>(time1ms, time2ms);
+      return stat;
     }
   }
 }
