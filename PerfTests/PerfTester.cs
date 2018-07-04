@@ -1,13 +1,11 @@
-﻿using PerfTests;
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.IO;
 
-namespace PerfTestsTools
+namespace PerfTests
 {
-  public static class PerfTests
+  public static class PerfTester
   {
-
     public static void TestMethod(Action func1, Action func2, int iterations, TextWriter output)
     {
       TestMethodDisp((iter) => TestMethodImpl(func1, func2, iter), iterations, output);

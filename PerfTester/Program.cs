@@ -1,5 +1,4 @@
-﻿using PerfTestsTools;
-using System;
+﻿using System;
 using System.Globalization;
 
 namespace PerfTester
@@ -12,7 +11,7 @@ namespace PerfTester
       const string dt = "2017-02-14 22:24:12";
       var culture = CultureInfo.InvariantCulture;
 
-      PerfTests.TestMethod(
+      PerfTests.PerfTester.TestMethod(
         func1: () => DateTime.Parse(dt, culture),
         func2: () => DateTime.ParseExact(dt, pattern, culture),
         iterations: 1000000,
