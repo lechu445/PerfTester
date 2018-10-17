@@ -88,16 +88,13 @@ namespace PerfTests
       GC.WaitForPendingFinalizers();
       GC.Collect();
 
-      if (iterations == 1)
+      for (int i = 0; i < WARM_UP_ITERATIONS; i++)
       {
-        for (int i = 0; i < WARM_UP_ITERATIONS; i++)
-        {
-          result = func1();
-        }
-        for (int i = 0; i < WARM_UP_ITERATIONS; i++)
-        {
-          result = func2();
-        }
+        result = func1();
+      }
+      for (int i = 0; i < WARM_UP_ITERATIONS; i++)
+      {
+        result = func2();
       }
 
       var memBefore0 = GC.CollectionCount(0);
