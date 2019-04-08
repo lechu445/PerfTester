@@ -1,23 +1,16 @@
-﻿using System;
+﻿using BenchmarkDotNet.Attributes;
+using BenchmarkDotNet;
+using System;
 using System.Globalization;
+using System.Collections.Generic;
 
 namespace PerfTester
 {
-  class Program
+  public class Program
   {
     static void Main(string[] args)
     {
-      const string pattern = "yyyy-MM-dd HH:mm:ss";
-      const string dt = "2017-02-14 22:24:12";
-      var culture = CultureInfo.InvariantCulture;
-
-      PerfTests.PerfTester.TestMethod(
-        func1: () => DateTime.Parse(dt, culture),
-        func2: () => DateTime.ParseExact(dt, pattern, culture),
-        iterations: 1000000,
-        output: Console.Out);
-
-      Console.ReadKey();
+      BenchmarkDotNet.Running.BenchmarkRunner.Run<TestClass>(BenchmarkDotNet.Configs.DefaultConfig.Instance);
     }
   }
 }
